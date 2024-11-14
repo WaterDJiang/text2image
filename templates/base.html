@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI创作助手{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="material-icons">smart_toy</i> Wattter AI创作助手</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('mood') }}" class="nav-item {% if request.endpoint == 'mood' %}active{% endif %}">
+                    <i class="material-icons">favorite</i>
+                    <span>心情文案</span>
+                </a>
+                <a href="{{ url_for('sarcastic') }}" class="nav-item {% if request.endpoint == 'sarcastic' %}active{% endif %}">
+                    <i class="material-icons">mood</i>
+                    <span>毒舌看图</span>
+                </a>
+                <a href="{{ url_for('poetry') }}" class="nav-item {% if request.endpoint == 'poetry' %}active{% endif %}">
+                    <i class="material-icons">auto_stories</i>
+                    <span>诗意看图</span>
+                </a>
+                <a href="{{ url_for('story') }}" class="nav-item {% if request.endpoint == 'story' %}active{% endif %}">
+                    <i class="material-icons">edit_note</i>
+                    <span>故事创作</span>
+                </a>
+                <a href="{{ url_for('history') }}" class="nav-item {% if request.endpoint == 'history' %}active{% endif %}">
+                    <i class="material-icons">history</i>
+                    <span>历史记录</span>
+                </a>
+                <a href="{{ url_for('settings') }}" class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                    <i class="material-icons">settings</i>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block scripts %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% endblock %}
+</body>
+</html> 
