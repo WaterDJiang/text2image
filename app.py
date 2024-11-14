@@ -208,7 +208,7 @@ def history():
 @app.route('/settings')
 def settings():
     return render_template('coming_soon.html', page_title='设置')
-
-if __name__ == '__main__':
-    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=debug_mode) 
+app.debug = True
+# if __name__ == '__main__':
+#     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+#     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=debug_mode) 
