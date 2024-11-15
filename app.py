@@ -83,7 +83,7 @@ def upload_image():
         
         if 'type' not in request.form:
             logger.error("No type specified in request")
-            return jsonify({'error': '未定生成类型'}), 400
+            return jsonify({'error': '未生成类型'}), 400
         
         image = request.files['image']
         if image.filename == '':
@@ -208,7 +208,7 @@ def history():
 @app.route('/settings')
 def settings():
     return render_template('coming_soon.html', page_title='设置')
-app.debug = True
-# if __name__ == '__main__':
-#     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-#     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=debug_mode) 
+
+if __name__ == '__main__':
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=debug_mode) 
