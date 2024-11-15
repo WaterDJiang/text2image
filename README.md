@@ -1,42 +1,43 @@
-# AI 图片生成器
+# AI图片处理服务
 
-## 部署到 Vercel
+## 快速开始
 
-1. Fork 此仓库
+1. 确保已安装以下软件：
+   - Python 3.8+
+   - Node.js 14+
+   - npm 6+
 
-2. 在 Vercel 中导入项目
+2. 配置环境变量
+   在 backend 目录下创建 .env 文件：
+   ```
+   COZE_API_URL=你的COZE_API地址
+   COZE_API_KEY=你的COZE_API密钥
+   IMGBB_API_KEY=你的IMGBB_API密钥
+   WORKFLOW_ID_MOOD=心情工作流ID
+   WORKFLOW_ID_SARCASTIC=毒舌工作流ID
+   WORKFLOW_ID_POETRY=诗意工作流ID
+   WORKFLOW_ID_STORY=故事工作流ID
+   ```
 
-3. 配置环境变量
-   在 Vercel 项目设置中添加以下环境变量：
-   - `COZE_API_URL`
-   - `COZE_API_KEY`
-   - `IMGBB_API_KEY`
-   - `WORKFLOW_ID_MOOD`
-   - `WORKFLOW_ID_SARCASTIC`
+3. 启动服务
+   ```bash
+   chmod +x start.sh stop.sh
+   ./start.sh
+   ```
 
-4. 部署
-   Vercel 会自动部署项目
+4. 停止服务
+   ```bash
+   ./stop.sh
+   ```
 
-## 本地开发
+## 服务地址
+- 前端: http://localhost:5173
+- 后端: http://localhost:8000
 
-1. 克隆仓库
-
-## 功能特点
-
-- 支持拖拽上传图片
-- 支持点击上传图片
-- 文件大小和格式验证
-- 实时预览
-- 生成内容展示
-- 分享功能
-
-## 使用方法
-
-1. 上传图片（支持 JPG、PNG、GIF 或 WEBP 格式）
-2. 点击"生成毒舌文案"按钮
-3. 等待 AI 生成结果
-4. 查看或分享生成的内容
-
-## 开发说明
-
-本项目使用原生 JavaScript 开发，无需额外依赖。
+## 功能列表
+- 心情文案生成
+- 毒舌看图
+- 诗意看图
+- 故事创作
+- 图片尺寸调整
+- 历史记录 
