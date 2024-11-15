@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
         input.click();
     });
 
-    generateBtn.addEventListener('click', async function() {
+    generateBtn.addEventListener('click', debounce(async function() {
         if (!selectedFile) {
             showToast('请先上传图片');
             return;
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             generateBtn.disabled = false;
             generateBtn.innerHTML = '<i class="material-icons">auto_awesome</i><span>生成毒舌文案</span>';
         }
-    });
+    }, 500));
 
     // 修改查看图片按钮的处理逻辑
     copyBtn.addEventListener('click', function() {
@@ -264,4 +264,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         }, 3000);
     }
+
+    // 添加更多的加载状态反馈
+    loadingAnimation.innerHTML = `
+        <div class="spinner"></div>
+        <p>AI 正在思考中...</p>
+        <p class="loading-tips">这可能需要几秒钟时间</p>
+    `;
 }); 
