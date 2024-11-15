@@ -1,6 +1,25 @@
 # AI 图片生成器
 
-这是一个基于 AI 的图片生成工具，支持上传图片并生成相应的内容。
+## 部署到 Vercel
+
+1. Fork 此仓库
+
+2. 在 Vercel 中导入项目
+
+3. 配置环境变量
+   在 Vercel 项目设置中添加以下环境变量：
+   - `COZE_API_URL`
+   - `COZE_API_KEY`
+   - `IMGBB_API_KEY`
+   - `WORKFLOW_ID_MOOD`
+   - `WORKFLOW_ID_SARCASTIC`
+
+4. 部署
+   Vercel 会自动部署项目
+
+## 本地开发
+
+1. 克隆仓库
 
 ## 功能特点
 

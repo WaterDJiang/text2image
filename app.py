@@ -6,7 +6,9 @@ import logging
 import json
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-import imghdr
+from PIL import Image
+import io
+import time
 
 # 加载环境变量
 load_dotenv()
@@ -42,17 +44,56 @@ if missing_vars:
 MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
+# 在现有的环境变量配置后添加
+VERCEL_ENV = os.getenv('VERCEL_ENV', 'development')
+VERCEL_URL = os.getenv('VERCEL_URL', 'localhost:5001')
+VERCEL_REGION = os.getenv('VERCEL_REGION', 'dev1')
+VERCEL_DEPLOYMENT_ID = os.getenv('VERCEL_DEPLOYMENT_ID', '')
+
+# 根据环境设置基础 URL
+BASE_URL = f"https://{VERCEL_URL}" if VERCEL_ENV == 'production' else f"http://{VERCEL_URL}"
+
+# 修改 Flask 配置
+app.config.update(
+    SERVER_NAME=VERCEL_URL if VERCEL_ENV == 'production' else None,
+    PREFERRED_URL_SCHEME='https' if VERCEL_ENV == 'production' else 'http'
+)
+
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def validate_image(stream):
-    header = stream.read(512)
-    stream.seek(0)
-    format = imghdr.what(None, header)
-    if not format:
+    try:
+        image = Image.open(stream)
+        image.verify()
+        stream.seek(0)
+        format = image.format.lower()
+        if format not in ['jpeg', 'jpg', 'png', 'gif', 'webp']:
+            return None
+        return '.' + (format if format != 'jpeg' else 'jpg')
+    except Exception:
         return None
-    return '.' + (format if format != 'jpeg' else 'jpg')
+
+def upload_to_imgbb(image, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            imgbb_url = f"https://api.imgbb.com/1/upload?key={IMGBB_API_KEY}"
+            files = {'image': (secure_filename(image.filename), image.read(), image.content_type)}
+            response = requests.post(imgbb_url, files=files, timeout=10)
+            
+            if response.status_code == 200:
+                return response.json()['data']['url']
+            
+            logger.warning(f"Upload attempt {attempt + 1} failed: Status {response.status_code}")
+            
+        except Exception as e:
+            logger.error(f"Upload attempt {attempt + 1} failed: {str(e)}")
+            if attempt == max_retries - 1:
+                raise
+            
+        time.sleep(1)  # 等待1秒后重试
+    
+    raise Exception("Max retries exceeded")
 
 @app.route('/')
 def index():
@@ -78,67 +119,35 @@ def story():
 def upload_image():
     try:
         if 'image' not in request.files:
-            logger.error("No image file in request")
             return jsonify({'error': '没有上传图片'}), 400
         
         if 'type' not in request.form:
-            logger.error("No type specified in request")
-            return jsonify({'error': '未生成类型'}), 400
+            return jsonify({'error': '未指定生成类型'}), 400
+        
+        generation_type = request.form['type']
+        logger.debug(f"Generation type: {generation_type}")
+        
+        if generation_type not in WORKFLOWS:
+            return jsonify({'error': '不支持的生成类型'}), 400
         
         image = request.files['image']
         if image.filename == '':
-            logger.error("Empty filename")
             return jsonify({'error': '未选择文件'}), 400
-
-        # 验证文件类型
-        if not allowed_file(image.filename):
-            logger.error(f"Invalid file type: {image.filename}")
-            return jsonify({'error': '不支持的文件格式，请上传 JPG、PNG、GIF 或 WEBP 格式的图片'}), 400
-
-        # 验证文件内容
-        if not validate_image(image.stream):
-            logger.error("Invalid image content")
-            return jsonify({'error': '文件内容无效，请上传有效的图片文件'}), 400
-
-        # 检查文件大小
-        image.seek(0, 2)  # 移动到文件末尾
-        size = image.tell()  # 获取文件大小
-        image.seek(0)  # 重置文件指针
         
-        if size > MAX_CONTENT_LENGTH:
-            logger.error(f"File too large: {size} bytes")
-            return jsonify({'error': '图片大小不能超过 5MB'}), 400
-
-        # 准备上传到 ImgBB
+        # Upload to ImgBB
         try:
             imgbb_url = f"https://api.imgbb.com/1/upload?key={IMGBB_API_KEY}"
-            files = {'image': (secure_filename(image.filename), image.read(), image.content_type)}
-            
-            # 添加超时设置
+            files = {'image': (image.filename, image.read(), image.content_type)}
             response = requests.post(imgbb_url, files=files, timeout=10)
             
             if response.status_code != 200:
-                logger.error(f"ImgBB upload failed: Status {response.status_code}, Response: {response.text}")
-                return jsonify({'error': '图片上传失败，请重试'}), 500
+                logger.error(f"ImgBB upload failed: {response.text}")
+                return jsonify({'error': '图片上传失败'}), 500
             
             image_url = response.json()['data']['url']
             logger.debug(f"Image uploaded successfully: {image_url}")
             
-        except requests.Timeout:
-            logger.error("ImgBB upload timeout")
-            return jsonify({'error': '图片上传超时，请重试'}), 500
-        except requests.RequestException as e:
-            logger.error(f"ImgBB upload error: {str(e)}")
-            return jsonify({'error': '图片上传失败，请检查网络连接'}), 500
-        except Exception as e:
-            logger.error(f"Unexpected error during upload: {str(e)}", exc_info=True)
-            return jsonify({'error': '图片上传过程中出错'}), 500
-
-        generation_type = request.form['type']
-        logger.debug(f"Generation type: {generation_type}")
-
-        # Call Coze API
-        try:
+            # Call Coze API
             coze_data = {
                 "workflow_id": WORKFLOWS[generation_type],
                 "parameters": {
@@ -152,28 +161,24 @@ def upload_image():
                 'Content-Type': 'application/json'
             }
             
-            logger.debug(f"Calling Coze API with data: {json.dumps(coze_data)}")
             coze_response = requests.post(API_URL, json=coze_data, headers=headers)
-            logger.debug(f"Coze API response status: {coze_response.status_code}")
-            logger.debug(f"Coze API response text: {coze_response.text}")
+            logger.debug(f"Coze API response: {coze_response.text}")
             
             if coze_response.status_code != 200:
-                error_message = str(coze_response.text)
-                logger.error(f"Coze API error: Status {coze_response.status_code}, Response: {error_message}")
-                if '忘记充值' in error_message:
-                    return jsonify({
-                        'error': '主人忘记充值了，想不出文案',
-                        'type': 'recharge'
-                    }), 400
-                return jsonify({'error': f'生成失败: {error_message}'}), 500
+                return jsonify({'error': '生成失败'}), 500
             
             result = coze_response.json()
-            logger.debug(f"Parsed result: {result}")
             
-            # 获取返回的数据
-            data = result.get('data', '')
+            # 检查是否包含充值提示
+            if '忘记充值' in str(result):
+                return jsonify({
+                    'error': '主人忘记充值了，想不出文案',
+                    'type': 'recharge'
+                }), 400
+            
+            # 解析返回数据
             try:
-                # 尝试解析数据中的 JSON 字符串
+                data = result.get('data', '')
                 if isinstance(data, str):
                     data_json = json.loads(data)
                     if '忘记充值' in str(data_json.get('output', '')):
@@ -182,23 +187,16 @@ def upload_image():
                             'type': 'recharge'
                         }), 400
                     return jsonify(data_json)
-                return jsonify(data)
+                return jsonify({'output': data})
             except json.JSONDecodeError:
-                # 如果不是 JSON 字符串，直接返回
                 return jsonify({'output': data})
             
         except requests.exceptions.RequestException as e:
-            logger.error(f"Request error during Coze API call: {str(e)}", exc_info=True)
+            logger.error(f"Request error: {str(e)}")
             return jsonify({'error': '网络请求失败，请稍后重试'}), 500
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON decode error: {str(e)}", exc_info=True)
-            return jsonify({'error': '返回数据格式错误'}), 500
-        except Exception as e:
-            logger.error(f"Unexpected error during Coze API call: {str(e)}", exc_info=True)
-            return jsonify({'error': str(e)}), 500
             
     except Exception as e:
-        logger.error(f"Unexpected error in upload_image: {str(e)}", exc_info=True)
+        logger.error(f"Unexpected error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/history')
