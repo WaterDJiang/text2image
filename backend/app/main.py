@@ -21,8 +21,9 @@ app = FastAPI(title="AI图片处理服务")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Vue开发服务器
-        "https://image2text.vercel.app"  # 生产环境域名
+        "http://localhost:5173",  # 本地开发环境
+        "https://image2text-web.vercel.app",  # Vercel 部署地址
+        "https://image2text-web-waterdjiang.vercel.app"  # 实际的 Vercel 部署地址
     ],
     allow_credentials=True,
     allow_methods=["*"],

@@ -13,11 +13,16 @@ export function useImageProcessing() {
     formData.append('workflow_type', workflowType)
 
     try {
-      const response = await axios.post('/api/process-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/process-image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: true
         }
-      })
+      )
       return response.data
     } catch (error) {
       throw new Error(error.response?.data?.detail || '处理失败')
