@@ -1,5 +1,9 @@
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.PROD 
+  ? 'https://your-backend-url.vercel.app'  // Vercel 部署的后端地址
+  : ''  // 开发环境使用相对路径
+
 export function useImageProcessing() {
   /**
    * 处理图片
@@ -14,7 +18,7 @@ export function useImageProcessing() {
 
     try {
       const response = await axios.post(
-        '/api/process-image',
+        `${API_BASE_URL}/api/process-image`,
         formData,
         {
           headers: {
@@ -49,7 +53,7 @@ export function useImageProcessing() {
     formData.append('height', height)
 
     try {
-      const response = await axios.post('/api/resize-image', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/resize-image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -67,7 +71,7 @@ export function useImageProcessing() {
    */
   const processPoetry = async (text) => {
     try {
-      const response = await axios.post('/api/process-poetry', {
+      const response = await axios.post(`${API_BASE_URL}/api/process-poetry`, {
         text: text
       }, {
         headers: {

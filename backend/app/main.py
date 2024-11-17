@@ -34,6 +34,11 @@ app.add_middleware(
 class PoetryRequest(BaseModel):
     text: str
 
+@app.get("/")
+async def root():
+    """根路径处理程序"""
+    return {"message": "Welcome to AI Image Processing API"}
+
 @app.get("/api/health")
 async def health_check():
     """健康检查接口"""
