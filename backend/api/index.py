@@ -5,11 +5,7 @@ from app.main import app
 # 配置CORS - 针对前后端分离的配置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # 本地前端开发环境
-        "https://image2text-web.vercel.app",  # 前端部署地址
-        "https://image2text-web-waterdjiang.vercel.app",  # 前端部署地址
-    ],
+    allow_origins=["*"],  # 允许所有源，因为我们在 vercel.json 中已经配置了 CORS
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
