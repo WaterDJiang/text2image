@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://your-backend-url.vercel.app'  // Vercel 部署的后端地址
+  ? 'https://image2text-web-backend.vercel.app'  // 线上后端地址
   : ''  // 开发环境使用相对路径
 
 export function useImageProcessing() {
@@ -24,11 +24,10 @@ export function useImageProcessing() {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          withCredentials: true
+          withCredentials: false  // 修改这里，跨域请求不需要携带凭证
         }
       )
       
-      // 返回包含原图和明信片图片的数据
       return {
         text: response.data.text,
         originalImage: response.data.original_image,
@@ -56,7 +55,8 @@ export function useImageProcessing() {
       const response = await axios.post(`${API_BASE_URL}/api/resize-image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        withCredentials: false  // 修改这里
       })
       return response.data
     } catch (error) {
@@ -76,7 +76,8 @@ export function useImageProcessing() {
       }, {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        withCredentials: false  // 修改这里
       })
       return response.data
     } catch (error) {
