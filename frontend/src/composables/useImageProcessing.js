@@ -4,37 +4,24 @@ const API_BASE_URL = import.meta.env.PROD
   ? 'https://image2text-web-backend.vercel.app'  // 线上后端地址
   : ''  // 开发环境使用相对路径
 
-export function useImageProcessing() {
+export const useImageProcessing = () => {
   /**
    * 处理图片
    * @param {File} file - 要处理的图片文件
    * @param {string} workflowType - 工作流类型
    * @returns {Promise} 处理结果
    */
-  const processImage = async (file, workflowType) => {
+  const processImage = async (file, type) => {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('workflow_type', workflowType)
-
+    formData.append('workflow_type', type)
+    
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/process-image`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          withCredentials: false  // 修改这里，跨域请求不需要携带凭证
-        }
-      )
-      
-      return {
-        text: response.data.text,
-        originalImage: response.data.original_image,
-        postcardImage: response.data.postcard_image
-      }
+      const response = await axios.post(`${API_BASE_URL}/api/process-image`, formData)
+      return response.data
     } catch (error) {
-      throw new Error(error.response?.data?.detail || '处理失败')
+      console.error('处理图片失败:', error)
+      throw error
     }
   }
 
