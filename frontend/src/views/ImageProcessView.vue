@@ -136,7 +136,7 @@ const handleProcess = async () => {
   processing.value = true
   try {
     const result = await processImage(currentFile.value, props.workflowType)
-    resultImage.value = result.output_image_url
+    resultImage.value = result.postcardImage
     ElMessage.success('处理成功')
   } catch (error) {
     ElMessage.error('处理失败：' + error.message)

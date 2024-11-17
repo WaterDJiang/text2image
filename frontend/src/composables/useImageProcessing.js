@@ -14,7 +14,7 @@ export function useImageProcessing() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/process-image`,
+        '/api/process-image',
         formData,
         {
           headers: {
@@ -23,7 +23,13 @@ export function useImageProcessing() {
           withCredentials: true
         }
       )
-      return response.data
+      
+      // 返回包含原图和明信片图片的数据
+      return {
+        text: response.data.text,
+        originalImage: response.data.original_image,
+        postcardImage: response.data.postcard_image
+      }
     } catch (error) {
       throw new Error(error.response?.data?.detail || '处理失败')
     }

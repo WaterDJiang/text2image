@@ -12,7 +12,7 @@
 
         <el-menu-item index="/poetry">
           <el-icon><i-ep-reading /></el-icon>
-          <span>诗意绘图</span>
+          <span>趣语趣图</span>
         </el-menu-item>        
 
         <el-menu-item index="/mood">

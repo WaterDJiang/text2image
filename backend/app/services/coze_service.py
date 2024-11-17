@@ -65,15 +65,35 @@ class CozeService:
                             data = json.loads(data)
                             logger.debug(f"解析后的数据: {data}")
                         
-                        output = data.get('output')
-                        if not output:
+                        output_text = data.get('output')
+                        if not output_text:
                             logger.error("响应中没有output字段")
                             return None
                         
+                        # 调用图片服务生成明信片样式的图片
+                        from ..services.image_service import ImageService
+                        image_service = ImageService()
+                        postcard_image = image_service.create_postcard(
+                            image_url=image_url,
+                            text=output_text
+                        )
+                        
+                        # 上传合成后的图片
+                        from ..services.imgbb_service import ImgBBService
+                        imgbb_service = ImgBBService()
+                        final_image_url = imgbb_service.upload_image(postcard_image)
+                        
+                        if not final_image_url:
+                            logger.error("合成图片上传失败")
+                            return None
+                        
                         return {
-                            'output_image_url': output,
+                            'text': output_text,
+                            'original_image': image_url,
+                            'postcard_image': final_image_url,
                             'debug_url': result.get('debug_url')
                         }
+                        
                     except json.JSONDecodeError as e:
                         logger.error(f"JSON解析失败: {str(e)}, 原始数据: {data}")
                         return None
