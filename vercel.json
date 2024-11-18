@@ -17,9 +17,5 @@
         "source": "/(.*)",
         "destination": "/$1"
       }
-    ],
-    "env": {
-      "PYTHON_VERSION": "3.9"
-    },
-    "regions": ["hkg1"]
+    ]
   }

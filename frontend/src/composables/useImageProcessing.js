@@ -20,12 +20,8 @@ export const useImageProcessing = () => {
       const response = await axios.post(`${API_BASE_URL}/process-image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        },
-        validateStatus: function (status) {
-          return status < 500 // 只有状态码大于等于500时才会被视为错误
         }
       })
-      console.log('API响应:', response)
       
       if (!response.data.postcard_image) {
         throw new Error('未获取到处理后的图片')
@@ -35,8 +31,7 @@ export const useImageProcessing = () => {
         text: response.data.text
       }
     } catch (error) {
-      console.error('处理图片失败:', error)
-      console.error('错误详情:', error.response || error)
+      console.error('处理图片失败:', error.response || error)
       throw new Error(error.response?.data?.detail || error.message || '处理失败')
     }
   }
