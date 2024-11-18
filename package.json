@@ -5,10 +5,6 @@
   "scripts": {
     "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm install && npm run build",
-    "start": "chmod +x start.sh && ./start.sh",
-    "stop": "chmod +x stop.sh && ./stop.sh"
-  },
-  "devDependencies": {
-    "rimraf": "^5.0.5"
+    "vercel-build": "cd frontend && npm install && npm run build"
   }
 } 
