@@ -1,8 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://image2text-web-backend.vercel.app'  // 线上后端地址
-  : ''  // 开发环境使用相对路径
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export const useImageProcessing = () => {
   /**
@@ -17,8 +15,17 @@ export const useImageProcessing = () => {
     formData.append('workflow_type', type)
     
     try {
+      console.log('发送请求到:', `${API_BASE_URL}/api/process-image`)
       const response = await axios.post(`${API_BASE_URL}/api/process-image`, formData)
-      return response.data
+      console.log('处理结果:', response.data)
+      
+      if (!response.data.postcard_image) {
+        throw new Error('未获取到处理后的图片')
+      }
+      return {
+        postcardImage: response.data.postcard_image,
+        text: response.data.text
+      }
     } catch (error) {
       console.error('处理图片失败:', error)
       throw error

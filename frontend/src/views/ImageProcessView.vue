@@ -135,11 +135,19 @@ const handleProcess = async () => {
 
   processing.value = true
   try {
+    console.log('开始处理图片:', props.workflowType)
     const result = await processImage(currentFile.value, props.workflowType)
-    resultImage.value = result.postcardImage
-    ElMessage.success('处理成功')
+    console.log('处理结果:', result) // 添加日志
+    
+    if (result && result.postcardImage) {
+      resultImage.value = result.postcardImage
+      ElMessage.success('处理成功')
+    } else {
+      throw new Error('处理结果格式错误')
+    }
   } catch (error) {
-    ElMessage.error('处理失败：' + error.message)
+    console.error('处理失败:', error)
+    ElMessage.error('处理失败：' + (error.message || '未知错误'))
   } finally {
     processing.value = false
   }

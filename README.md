@@ -41,3 +41,27 @@
 - 故事创作
 - 图片尺寸调整
 - 历史记录 
+
+## 环境变量配置
+
+1. 复制环境变量示例文件:
+```bash
+cp .env.example .env
+```
+
+2. 修改 .env 文件中的配置:
+- COZE_API_URL: https://api.coze.cn/v1/workflow/run
+- COZE_API_KEY: 你的 Coze API 密钥
+- IMGBB_API_KEY: 你的 ImgBB API 密钥
+- WORKFLOW_ID_MOOD: 7436280348118286387
+- WORKFLOW_ID_SARCASTIC: 7436699979249254419
+- WORKFLOW_ID_POETRY: 7416197020363423781
+- WORKFLOW_ID_STORY: 你的故事工作流 ID
+
+3. 开发环境配置:
+前端开发环境变量位于 frontend/.env.development
+后端开发环境变量位于 backend/.env
+
+4. 生产环境配置:
+前端生产环境变量位于 frontend/.env.production
+后端生产环境变量通过 Vercel 环境变量配置

@@ -1,5 +1,10 @@
-streamlit
-python-dotenv
-requests
-Pillow
-urllib3>=2.0.0 
+# Backend Dependencies
+fastapi==0.104.1
+python-dotenv==1.0.0
+requests==2.31.0
+Pillow==10.1.0
+python-multipart==0.0.6
+uvicorn==0.24.0
+pydantic==2.5.2
+
+# Frontend Dependencies will be installed via package.json 
