@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import sys
 import os
 
-# 添加后端根目录到 Python 路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# 添加正确的 Python 路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+backend_dir = os.path.dirname(os.path.dirname(current_dir))
+sys.path.insert(0, backend_dir)
 
-from app.main import app
+from backend.app.main import app
 
 # 配置CORS
 origins = ["*"]

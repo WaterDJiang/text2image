@@ -2,46 +2,40 @@ import os
 from dotenv import load_dotenv
 import logging
 
+# 配置日志记录
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 # 加载环境变量
 load_dotenv()
-
-# 配置日志记录
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 
 class Settings:
     """应用配置类"""
     
-    # API配置
-    COZE_API_URL = os.getenv('COZE_API_URL')  # Coze API地址
-    COZE_API_KEY = os.getenv('COZE_API_KEY')  # Coze API密钥
-    IMGBB_API_KEY = os.getenv('IMGBB_API_KEY')  # ImgBB API密钥
-    
-    # 工作流ID配置
-    WORKFLOW_ID_MOOD = os.getenv('WORKFLOW_ID_MOOD')  # 心情文案工作流
-    WORKFLOW_ID_SARCASTIC = os.getenv('WORKFLOW_ID_SARCASTIC')  # 毒舌文案工作流
-    WORKFLOW_ID_POETRY = os.getenv('WORKFLOW_ID_POETRY')  # 诗意工作流
-    WORKFLOW_ID_STORY = os.getenv('WORKFLOW_ID_STORY')  # 故事工作流
-    
-    # 服务器配置
-    DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'  # 调试模式
-    PORT = int(os.getenv('PORT', 8000))  # 服务端口
+    def __init__(self):
+        # API配置
+        self.COZE_API_URL = os.getenv('COZE_API_URL')
+        self.COZE_API_KEY = os.getenv('COZE_API_KEY')
+        self.IMGBB_API_KEY = os.getenv('IMGBB_API_KEY')
+        
+        # 工作流ID配置
+        self.WORKFLOW_ID_MOOD = os.getenv('WORKFLOW_ID_MOOD')
+        self.WORKFLOW_ID_SARCASTIC = os.getenv('WORKFLOW_ID_SARCASTIC')
+        self.WORKFLOW_ID_POETRY = os.getenv('WORKFLOW_ID_POETRY')
+        self.WORKFLOW_ID_STORY = os.getenv('WORKFLOW_ID_STORY')
+        
+        # 记录环境变量状态
+        self._log_env_status()
+        
+    def _log_env_status(self):
+        """记录环境变量状态"""
+        env_vars = {
+            'COZE_API_URL': bool(self.COZE_API_URL),
+            'COZE_API_KEY': bool(self.COZE_API_KEY),
+            'IMGBB_API_KEY': bool(self.IMGBB_API_KEY),
+            'WORKFLOW_ID_MOOD': bool(self.WORKFLOW_ID_MOOD),
+            'WORKFLOW_ID_SARCASTIC': bool(self.WORKFLOW_ID_SARCASTIC)
+        }
+        logger.info(f"Environment variables status: {env_vars}")
 
-    def validate(self):
-        """验证必要的配置是否存在"""
-        required_fields = [
-            'COZE_API_URL',
-            'COZE_API_KEY',
-            'IMGBB_API_KEY',
-            'WORKFLOW_ID_MOOD',
-            'WORKFLOW_ID_SARCASTIC'
-        ]
-        for field in required_fields:
-            if not getattr(self, field):
-                raise ValueError(f"缺少必要的配置项: {field}")
-
-settings = Settings()
-# 验证配置
-settings.validate() 
+settings = Settings() 
