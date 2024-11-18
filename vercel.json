@@ -1,6 +1,8 @@
 {
     "version": 2,
-    "buildCommand": "npm run build",
+    "framework": "vite",
+    "buildCommand": "cd frontend && npm install && npm run build",
+    "installCommand": "npm install",
     "outputDirectory": "frontend/dist",
     "builds": [
       {
@@ -15,10 +17,11 @@
       },
       {
         "source": "/(.*)",
-        "destination": "/frontend/dist/$1"
+        "destination": "/$1"
       }
     ],
     "env": {
       "PYTHON_VERSION": "3.9"
-    }
+    },
+    "regions": ["hkg1"]
   }
