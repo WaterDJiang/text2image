@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export const useImageProcessing = () => {
   /**
@@ -15,8 +15,7 @@ export const useImageProcessing = () => {
     formData.append('workflow_type', type)
     
     try {
-      console.log('发送请求到:', `${API_BASE_URL}/api/process-image`)
-      const response = await axios.post(`${API_BASE_URL}/api/process-image`, formData)
+      const response = await axios.post(`${API_BASE_URL}/process-image`, formData)
       console.log('处理结果:', response.data)
       
       if (!response.data.postcard_image) {
@@ -46,12 +45,7 @@ export const useImageProcessing = () => {
     formData.append('height', height)
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/resize-image`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        withCredentials: false  // 修改这里
-      })
+      const response = await axios.post(`${API_BASE_URL}/resize-image`, formData)
       return response.data
     } catch (error) {
       throw new Error(error.response?.data?.detail || '调整失败')
@@ -65,13 +59,8 @@ export const useImageProcessing = () => {
    */
   const processPoetry = async (text) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/process-poetry`, {
+      const response = await axios.post(`${API_BASE_URL}/process-poetry`, {
         text: text
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        withCredentials: false  // 修改这里
       })
       return response.data
     } catch (error) {

@@ -50,13 +50,13 @@ cp .env.example .env
 ```
 
 2. 修改 .env 文件中的配置:
-- COZE_API_URL: https://api.coze.cn/v1/workflow/run
-- COZE_API_KEY: 你的 Coze API 密钥
-- IMGBB_API_KEY: 你的 ImgBB API 密钥
-- WORKFLOW_ID_MOOD: 7436280348118286387
-- WORKFLOW_ID_SARCASTIC: 7436699979249254419
-- WORKFLOW_ID_POETRY: 7416197020363423781
-- WORKFLOW_ID_STORY: 你的故事工作流 ID
+-   COZE_API_URL=你的COZE_API地址
+   COZE_API_KEY=你的COZE_API密钥
+   IMGBB_API_KEY=你的IMGBB_API密钥
+   WORKFLOW_ID_MOOD=心情工作流ID
+   WORKFLOW_ID_SARCASTIC=毒舌工作流ID
+   WORKFLOW_ID_POETRY=诗意工作流ID
+   WORKFLOW_ID_STORY=故事工作流ID
 
 3. 开发环境配置:
 前端开发环境变量位于 frontend/.env.development
