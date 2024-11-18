@@ -6,7 +6,8 @@
     "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm install && npm run build",
     "start": "chmod +x start.sh && ./start.sh",
-    "stop": "chmod +x stop.sh && ./stop.sh"
+    "stop": "chmod +x stop.sh && ./stop.sh",
+    "vercel-build": "cd frontend && npm install && npm run build"
   },
   "dependencies": {
     "axios": "^1.6.2",

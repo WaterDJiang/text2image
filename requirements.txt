@@ -6,5 +6,10 @@ Pillow==10.1.0
 python-multipart==0.0.6
 uvicorn==0.24.0
 pydantic==2.5.2
+python-jose==3.3.0
+passlib==1.7.4
+bcrypt==4.0.1
+aiofiles==23.2.1  # 用于异步文件处理
+python-magic==0.4.27  # 用于文件类型检测
 
 # Frontend Dependencies will be installed via package.json 
