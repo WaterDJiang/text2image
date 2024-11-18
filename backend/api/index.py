@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import sys
+import os
+
+# 添加后端根目录到 Python 路径
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.main import app
 
 # 配置CORS
-origins = ["*"]  # 在生产环境中应该替换为实际域名
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,

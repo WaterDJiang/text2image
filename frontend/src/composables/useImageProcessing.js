@@ -31,8 +31,18 @@ export const useImageProcessing = () => {
         text: response.data.text
       }
     } catch (error) {
-      console.error('处理图片失败:', error.response || error)
-      throw new Error(error.response?.data?.detail || error.message || '处理失败')
+      console.error('处理图片失败:', error)
+      if (error.response) {
+        console.error('错误响应:', error.response.data)
+        console.error('状态码:', error.response.status)
+        throw new Error(error.response.data.detail || '服务器处理失败')
+      } else if (error.request) {
+        console.error('请求错误:', error.request)
+        throw new Error('网络请求失败')
+      } else {
+        console.error('错误:', error.message)
+        throw error
+      }
     }
   }
 

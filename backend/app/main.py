@@ -93,4 +93,17 @@ async def process_poetry(request: PoetryRequest):
         
     except Exception as e:
         logger.error(f"处理诗意文本时发生错误: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    logger.error(f"Global error: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)}
+    )
+
+# 添加一个测试路由
+@app.get("/api/test")
+async def test_route():
+    return {"message": "API is working"} 

@@ -26,5 +26,8 @@
       "src": "/(.*)",
       "dest": "frontend/dist/index.html"
     }
-  ]
+  ],
+  "env": {
+    "PYTHONPATH": "backend"
+  }
 } 
