@@ -16,6 +16,10 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# 定义请求模型 - 移到这里，在使用之前定义
+class PoetryRequest(BaseModel):
+    text: str
+
 # 创建FastAPI应用实例
 app = FastAPI(title="AI图片处理服务")
 
@@ -124,17 +128,4 @@ async def process_poetry(request: PoetryRequest):
         
     except Exception as e:
         logger.error(f"处理诗意文本时发生错误: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    logger.error(f"Global error: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": str(exc)}
-    )
-
-# 添加一个测试路由
-@app.get("/api/test")
-async def test_route():
-    return {"message": "API is working"} 
+        raise HTTPException(status_code=500, detail=str(e)) 
