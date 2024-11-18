@@ -2,14 +2,12 @@
     "version": 2,
     "framework": "vite",
     "buildCommand": "cd frontend && npm install && npm run build",
-    "installCommand": "npm install",
     "outputDirectory": "frontend/dist",
-    "builds": [
-      {
-        "src": "backend/api/index.py",
-        "use": "@vercel/python"
+    "functions": {
+      "backend/api/index.py": {
+        "runtime": "python3.9"
       }
-    ],
+    },
     "rewrites": [
       {
         "source": "/api/(.*)",
