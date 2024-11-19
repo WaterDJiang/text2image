@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useModelStore } from '../stores/modelStore'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'  // 获取API基础URL
 
 export const useImageProcessing = () => {
   const modelStore = useModelStore()
@@ -13,40 +13,34 @@ export const useImageProcessing = () => {
    * @returns {Promise} 处理结果
    */
   const processImage = async (file, type) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('workflow_type', type)
-    formData.append('model', modelStore.currentModel)
+    const formData = new FormData()  // 创建表单数据
+    formData.append('file', file)  // 添加文件
+    formData.append('workflow_type', type)  // 添加工作流类型
+    formData.append('model', modelStore.currentModel)  // 添加当前模型
     
     try {
-      console.log('API Base URL:', API_BASE_URL)
-      console.log('发送请求到:', `${API_BASE_URL}/process-image`)
+      console.log('API Base URL:', API_BASE_URL)  // 打印API基础URL
+      console.log('发送请求到:', `${API_BASE_URL}/process-image`)  // 打印请求URL
       const response = await axios.post(`${API_BASE_URL}/process-image`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data'  // 设置请求头
         }
       })
       
       if (!response.data.postcard_image) {
-        throw new Error('未获取到处理后的图片')
+        throw new Error('未获取到处理后的图片')  // 如果未获取到图片，抛出错误
       }
       return {
-        postcardImage: response.data.postcard_image,
-        text: response.data.text
+        postcardImage: response.data.postcard_image,  // 返回处理后的图片
+        text: response.data.text  // 返回文本
       }
     } catch (error) {
-      console.error('处理图片失败:', error)
+      console.error('处理图片失败:', error)  // 打印错误信息
       if (error.response) {
-        console.error('错误响应:', error.response.data)
-        console.error('状态码:', error.response.status)
-        throw new Error(error.response.data.detail || '服务器处理失败')
-      } else if (error.request) {
-        console.error('请求错误:', error.request)
-        throw new Error('网络请求失败')
-      } else {
-        console.error('错误:', error.message)
-        throw error
+        console.error('错误响应:', error.response.data)  // 打印错误响应
+        console.error('状态码:', error.response.status)  // 打印状态码
       }
+      throw new Error('处理图片失败')  // 抛出处理失败的错误
     }
   }
 

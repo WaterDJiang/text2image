@@ -178,12 +178,12 @@ const handleReset = () => {
   padding: 40px;
   background: white;
   border-radius: 12px;
-  /* 修改为 9:16 比例 */
   width: 100%;
   max-width: 450px; /* 限制最大宽度，避免在大屏幕上太宽 */
-  aspect-ratio: 9/16;
+  aspect-ratio: 9/16; /* 修改为 9:16 比例 */
   overflow: hidden;
   margin: 0 auto; /* 居中显示 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 添加阴影效果 */
 }
 
 .poetry-content {
@@ -202,10 +202,10 @@ const handleReset = () => {
 }
 
 .comment-text {
-  font-size: 1.2rem;
-  line-height: 5;
+  font-size: 1rem; /* 增大字体大小 */
+  line-height: 1.5; /* 调整行高 */
   color: var(--notion-text);
-  text-align: center;
+  text-align: center; /* 居中对齐 */
   white-space: pre-wrap;
   margin-bottom: 30px;
   font-weight: 500;

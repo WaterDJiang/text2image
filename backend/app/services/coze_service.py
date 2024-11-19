@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 class CozeService:
     def __init__(self):
         """初始化CozeService，设置API相关配置"""
-        self.api_url = settings.COZE_API_URL
-        self.api_key = settings.COZE_API_KEY
-        self.workflow_id_mood = settings.WORKFLOW_ID_MOOD
-        self.workflow_id_sarcastic = settings.WORKFLOW_ID_SARCASTIC
-        self.workflow_id_poetry = os.getenv('WORKFLOW_ID_POETRY')
+        self.api_url = settings.COZE_API_URL  # COZE API地址
+        self.api_key = settings.COZE_API_KEY  # COZE API密钥
+        self.workflow_id_mood = settings.WORKFLOW_ID_MOOD  # 心情工作流ID
+        self.workflow_id_sarcastic = settings.WORKFLOW_ID_SARCASTIC  # 毒舌工作流ID
+        self.workflow_id_poetry = os.getenv('WORKFLOW_ID_POETRY')  # 诗意工作流ID
     
     def process_image(self, image_url, workflow_type="mood"):
         """
@@ -27,47 +27,47 @@ class CozeService:
         """
         try:
             headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-                "Accept": "*/*"
+                "Authorization": f"Bearer {self.api_key}",  # 设置授权头
+                "Content-Type": "application/json",  # 设置内容类型
+                "Accept": "*/*"  # 接受所有类型
             }
             
-            workflow_id = self._get_workflow_id(workflow_type)
+            workflow_id = self._get_workflow_id(workflow_type)  # 获取工作流ID
             if not workflow_id:
-                logger.error(f"未找到工作流类型: {workflow_type}")
+                logger.error(f"未找到工作流类型: {workflow_type}")  # 记录错误
                 return None
             
             payload = {
-                "workflow_id": workflow_id,
+                "workflow_id": workflow_id,  # 工作流ID
                 "parameters": {
-                    "image_url": image_url
+                    "image_url": image_url  # 图片URL
                 },
-                "is_async": False
+                "is_async": False  # 同步处理
             }
             
-            logger.debug("Coze API请求信息:")
-            logger.debug(f"URL: {self.api_url}")
-            logger.debug(f"Headers: {headers}")
-            logger.debug(f"Payload: {json.dumps(payload, ensure_ascii=False)}")
+            logger.debug("Coze API请求信息:")  # 记录请求信息
+            logger.debug(f"URL: {self.api_url}")  # 记录请求URL
+            logger.debug(f"Headers: {headers}")  # 记录请求头
+            logger.debug(f"Payload: {json.dumps(payload, ensure_ascii=False)}")  # 记录请求体
             
-            response = requests.post(self.api_url, json=payload, headers=headers)
+            response = requests.post(self.api_url, json=payload, headers=headers)  # 发送请求
             
-            logger.debug(f"Coze API响应状态码: {response.status_code}")
-            logger.debug(f"Coze API响应内容: {response.text}")
+            logger.debug(f"Coze API响应状态码: {response.status_code}")  # 记录响应状态码
+            logger.debug(f"Coze API响应内容: {response.text}")  # 记录响应内容
             
             if response.status_code == 200:
-                result = response.json()
+                result = response.json()  # 解析响应为JSON
                 
                 if result.get('code') == 0:
                     try:
-                        data = result.get('data')
+                        data = result.get('data')  # 获取数据
                         if isinstance(data, str):
-                            data = json.loads(data)
-                            logger.debug(f"解析后的数据: {data}")
+                            data = json.loads(data)  # 如果数据是字符串，解析为JSON
+                            logger.debug(f"解析后的数据: {data}")  # 记录解析后的数据
                         
-                        output_text = data.get('output')
+                        output_text = data.get('output')  # 获取输出文本
                         if not output_text:
-                            logger.error("响应中没有output字段")
+                            logger.error("响应中没有output字段")  # 记录错误
                             return None
                         
                         # 调用图片服务生成明信片样式的图片

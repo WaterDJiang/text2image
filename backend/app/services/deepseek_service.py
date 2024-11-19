@@ -19,7 +19,7 @@ class DeepseekService:
             logger.error(f"DeepSeek 服务初始化失败: {str(e)}")
             raise
         
-    def process_image(self, image_url, workflow_type="mood"):
+    async def process_image(self, image_url, workflow_type="mood"):
         """
         处理图片的主要方法
         Args:
@@ -41,16 +41,16 @@ class DeepseekService:
                 'mood': """
                         你是一位极具创意且专业的朋友圈文案大师，能够从图片中精准地挖掘出深刻情感与意义，为用户创作出令人惊艳的高大上朋友圈文案。
                         # 参考方向
-                        - 情感共鸣：深入剖析图片中的自我提升、家庭关系、爱情、嫉妒、人际关系等情感元素，引发强烈共鸣。例如：“遇见更好，成就非凡”，让人们在自我提升中找到动力。
-                        - 哲理性：赋予文案深刻的哲思，如“思想，填满生活的空缺”，启发人们思考人生。
-                        - 现实主义：反映现实社会现象，像“父母与钱，永不背叛”，展现真实的生活感悟。
-                        - 警示性：用文案起到警醒作用，“嫉妒如刀，伤人伤己”，提醒人们避免不良情绪。
-                        - 人际关系洞察：揭示人际关系的复杂性，“懂你的好，才是真的好”，增进人与人之间的理解。
-                        - 自我反省：鼓励自我反思，“坏脾气，留给最亲的人”，促使人们改善自身行为。
-                        - 幽默与讽刺：以幽默或讽刺的方式传达深刻信息，“世界没抛弃你，你也别瞎嚷嚷”，让人在轻松中领悟道理。
+                        - 情感共鸣：深入剖析图片中的自我提升、家庭关系、爱情、嫉妒、人际关系等情感元素，引发强烈共鸣。例如："遇见更好，成就非凡"，让人们在自我提升中找到动力。
+                        - 哲理性：赋予文案深刻的哲思，如"思想，填满生活的空缺"，启发人们思考人生。
+                        - 现实主义：反映现实社会现象，像"父母与钱，永不背叛"，展现真实的生活感悟。
+                        - 警示性：用文案起到警醒作用，"嫉妒如刀，伤人伤己"，提醒人们避免不良情绪。
+                        - 人际关系洞察：揭示人际关系的复杂性，"懂你的好，才是真的好"，增进人与人之间的理解。
+                        - 自我反省：鼓励自我反思，"坏脾气，留给最亲的人"，促使人们改善自身行为。
+                        - 幽默与讽刺：以幽默或讽刺的方式传达深刻信息，"世界没抛弃你，你也别瞎嚷嚷"，让人在轻松中领悟道理。
                         - 简洁有力：用简洁的语言传递丰富信息，让文案更具感染力。
                         - 普遍性：确保文案观点和情感具有广泛吸引力，不局限于特定群体。
-                        - 启发性：激发人们思考和行动，如“得不到，就收获经验”，引导人们积极面对生活。
+                        - 启发性：激发人们思考和行动，如"得不到，就收获经验"，引导人们积极面对生活。
                         # 步骤
                         1. 读取用户上传的图片链接，全面分析图片中的环境、人物以及心境、情绪等细节。
                         2. 从参考方向中精心选取合适的表达方式进行文案创作。
@@ -87,15 +87,15 @@ class DeepseekService:
                             1. 使用文本格式输出结果。
                             2. 只输出文案，无其他无关内容。
                             3. 参考输出案例：
-                            - “菜的味道让我怀疑厨师是不是在和调料吵架。”
-                            - “演唱会就像是一场长达两小时的音响测试，唯一的亮点是它终于结了。”
-                            - “新手机的创新功能让我怀疑它是不是来自上个世纪。”
-                            - “他的时尚品味就像天气预报，总是出乎意料地糟糕。”
-                            - “他们表现让我想起了一句老话：失败乃成功之母，但他们似乎只见到了母亲。”
+                            - "菜的味道让我怀疑厨师是不是在和调料吵架。"
+                            - "演唱会就像是一场长达两小时的音响测试，唯一的亮点是它终于结了。"
+                            - "新手机的创新功能让我怀疑它是不是来自上个世纪。"
+                            - "他的时尚品味就像天气预报，总是出乎意料地糟糕。"
+                            - "他们表现让我想起了一句老话：失败乃成功之母，但他们似乎只见到了母亲。"
 
                             # 限制
                             1. 专注于图片分析和点评创作，不涉及其他无关话题。
-                            2. 去掉一些对照片本身的指示代词，不要使用“这xx……”的句式开头。
+                            2. 去掉一些对照片本身的指示代词，不要使用"这xx……"的句式开头。
                             3. 严格按照要求的格式输出文案，不得偏离。
                         """,
                 'story': """
@@ -103,12 +103,10 @@ class DeepseekService:
                         """
             }
             
-            # 然后再验证工作流类型
             if workflow_type not in system_prompts:
                 logger.error(f"不支持的工作流类型: {workflow_type}")
                 return None
             
-            # 构建提示词
             messages = [
                 {"role": "system", "content": system_prompts.get(workflow_type, system_prompts['mood'])},
                 {"role": "user", "content": f"请观察这张图片（{image_url}）并给出你的创作。"}
@@ -118,7 +116,7 @@ class DeepseekService:
             logger.debug(f"请求参数: {json.dumps(messages, ensure_ascii=False)}")
             
             # 调用API
-            response = openai.ChatCompletion.create(
+            response = await openai.ChatCompletion.acreate(
                 model="deepseek-chat",
                 messages=messages,
                 temperature=0.7,
@@ -129,7 +127,6 @@ class DeepseekService:
             logger.info("DeepSeek API 响应成功")
             logger.debug(f"API响应: {response}")
             
-            # 获取生成的文本
             output_text = response.choices[0].message.content
             logger.info("成功获取生成的文本")
             logger.debug(f"生成的文本: {output_text}")
@@ -138,7 +135,7 @@ class DeepseekService:
             logger.info("开始生成明信片样式图片...")
             from ..services.image_service import ImageService
             image_service = ImageService()
-            postcard_image = image_service.create_postcard(
+            postcard_image = await image_service.create_postcard(
                 image_url=image_url,
                 text=output_text
             )
@@ -148,7 +145,7 @@ class DeepseekService:
             logger.info("开始上传合成后的图片...")
             from ..services.imgbb_service import ImgBBService
             imgbb_service = ImgBBService()
-            final_image_url = imgbb_service.upload_image(postcard_image)
+            final_image_url = await imgbb_service.upload_image(postcard_image)
             
             if not final_image_url:
                 logger.error("合成图片上传失败")
@@ -157,19 +154,17 @@ class DeepseekService:
             logger.info("图片上传成功")
             logger.debug(f"最终图片URL: {final_image_url}")
             
-            result = {
+            return {
                 'text': output_text,
                 'original_image': image_url,
                 'postcard_image': final_image_url
             }
-            logger.info("图片处理完成")
-            return result
             
         except Exception as e:
             logger.error(f"处理图片时发生错误: {str(e)}", exc_info=True)
             return None
     
-    def process_poetry(self, text):
+    async def process_poetry(self, text):
         try:
             logger.info("开始处理诗意文本...")
             
@@ -194,7 +189,7 @@ class DeepseekService:
                 {"role": "user", "content": f"请为这段文字提供诗意点评和配图：{text}"}
             ]
             
-            response = openai.ChatCompletion.create(
+            response = await openai.ChatCompletion.acreate(
                 model="deepseek-chat",
                 messages=messages,
                 temperature=0.7,
@@ -202,10 +197,8 @@ class DeepseekService:
                 stream=False
             )
             
-            # 解析响应内容
             content = response.choices[0].message.content
             
-            # 提取点评和SVG部分
             comment = ""
             svg = ""
             

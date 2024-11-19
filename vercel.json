@@ -1,44 +1,14 @@
 {
-  "version": 2,
   "builds": [
     {
       "src": "backend/api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.9",
-        "handler": "index.handler"
-      }
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend/dist",
-        "buildCommand": "npm run vercel-build"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/api/index.py"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/dist/index.html"
-    }
-  ],
-  "env": {
-    "PYTHONPATH": "."
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index"
+      "dest": "backend/api/index.py"
     }
   ]
 } 
