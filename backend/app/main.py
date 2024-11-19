@@ -11,6 +11,7 @@ from .services.coze_service import CozeService
 from .services.image_service import ImageService
 from .config import settings
 from pydantic import BaseModel
+from .services.deepseek_service import DeepseekService
 
 # 配置详细的日志记录
 logging.basicConfig(level=logging.DEBUG)
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 # 定义请求模型 - 移到这里，在使用之前定义
 class PoetryRequest(BaseModel):
     text: str
+    model: str = "deepseek"
 
 # 创建FastAPI应用实例
 app = FastAPI(title="AI图片处理服务")
@@ -31,7 +33,10 @@ async def startup_event():
         'COZE_API_KEY',
         'IMGBB_API_KEY',
         'WORKFLOW_ID_MOOD',
-        'WORKFLOW_ID_SARCASTIC'
+        'WORKFLOW_ID_SARCASTIC',
+        'WORKFLOW_ID_POETRY',
+        'WORKFLOW_ID_STORY',
+        'DEEPSEEK_API_KEY'
     ]
     missing_vars = [var for var in required_vars if not os.getenv(var)]
     if missing_vars:
@@ -55,6 +60,7 @@ async def test_route():
         env_vars = {
             'COZE_API_URL': os.getenv('COZE_API_URL'),
             'IMGBB_API_KEY': os.getenv('IMGBB_API_KEY'),
+            'DEEPSEEK_API_KEY': os.getenv('DEEPSEEK_API_KEY'),
             'PYTHONPATH': os.getenv('PYTHONPATH')
         }
         logger.info(f"Environment variables: {env_vars}")
@@ -62,6 +68,7 @@ async def test_route():
         # 测试服务实例化
         imgbb_service = ImgBBService()
         coze_service = CozeService()
+        deepseek_service = DeepseekService()
         
         return {
             "message": "API is working",
@@ -75,51 +82,52 @@ async def test_route():
 @app.post("/api/process-image")
 async def process_image(
     file: UploadFile = File(...),
-    workflow_type: str = Form("mood")
+    workflow_type: str = Form("mood"),
+    model: str = Form("deepseek")
 ):
     """处理图片API"""
     try:
-        logger.info(f"Processing image with workflow: {workflow_type}")
-        logger.info(f"File content type: {file.content_type}")
+        logger.info(f"Processing image with workflow: {workflow_type}, model: {model}")
         
         if not file.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="只支持图片文件")
         
         contents = await file.read()
-        logger.info(f"Read file contents: {len(contents)} bytes")
         
         imgbb_service = ImgBBService()
         image_url = imgbb_service.upload_image(contents)
         
         if not image_url:
-            logger.error("Failed to upload image to ImgBB")
             raise HTTPException(status_code=400, detail="图片上传失败")
         
-        logger.info(f"Image uploaded successfully: {image_url}")
-        
-        coze_service = CozeService()
-        result = coze_service.process_image(image_url, workflow_type)
+        # 根据选择的模型调用相应的服务
+        if model == "deepseek":
+            service = DeepseekService()
+        else:
+            service = CozeService()
+            
+        result = service.process_image(image_url, workflow_type)
         
         if not result:
-            logger.error("Failed to process image with Coze service")
             raise HTTPException(status_code=400, detail="图片处理失败")
         
-        logger.info("Image processed successfully")
         return result
         
-    except HTTPException as e:
-        logger.error(f"HTTP Exception: {str(e)}")
-        raise e
     except Exception as e:
-        logger.error(f"Processing error: {str(e)}", exc_info=True)
+        logger.error(f"Processing error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/process-poetry")
-async def process_poetry(request: PoetryRequest):
+async def process_poetry(request: PoetryRequest, model: str = "deepseek"):
     """处理诗意文本API"""
     try:
-        coze_service = CozeService()
-        result = coze_service.process_poetry(request.text)
+        # 根据选择的模型调用相应的服务
+        if model == "deepseek":
+            service = DeepseekService()
+        else:
+            service = CozeService()
+            
+        result = service.process_poetry(request.text)
         
         if not result:
             raise HTTPException(status_code=400, detail="生成失败")

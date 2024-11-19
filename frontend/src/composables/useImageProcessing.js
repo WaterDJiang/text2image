@@ -1,8 +1,11 @@
 import axios from 'axios'
+import { useModelStore } from '../stores/modelStore'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export const useImageProcessing = () => {
+  const modelStore = useModelStore()
+
   /**
    * 处理图片
    * @param {File} file - 要处理的图片文件
@@ -13,6 +16,7 @@ export const useImageProcessing = () => {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('workflow_type', type)
+    formData.append('model', modelStore.currentModel)
     
     try {
       console.log('API Base URL:', API_BASE_URL)
@@ -79,7 +83,8 @@ export const useImageProcessing = () => {
   const processPoetry = async (text) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/process-poetry`, {
-        text: text
+        text: text,
+        model: modelStore.currentModel
       }, {
         headers: {
           'Content-Type': 'application/json'

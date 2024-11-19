@@ -17,6 +17,7 @@ class Settings:
         self.COZE_API_URL = os.getenv('COZE_API_URL')
         self.COZE_API_KEY = os.getenv('COZE_API_KEY')
         self.IMGBB_API_KEY = os.getenv('IMGBB_API_KEY')
+        self.DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
         
         # 工作流ID配置
         self.WORKFLOW_ID_MOOD = os.getenv('WORKFLOW_ID_MOOD')
@@ -33,6 +34,7 @@ class Settings:
             'COZE_API_URL': bool(self.COZE_API_URL),
             'COZE_API_KEY': bool(self.COZE_API_KEY),
             'IMGBB_API_KEY': bool(self.IMGBB_API_KEY),
+            'DEEPSEEK_API_KEY': bool(self.DEEPSEEK_API_KEY),
             'WORKFLOW_ID_MOOD': bool(self.WORKFLOW_ID_MOOD),
             'WORKFLOW_ID_SARCASTIC': bool(self.WORKFLOW_ID_SARCASTIC)
         }
