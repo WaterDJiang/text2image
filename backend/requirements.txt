@@ -7,7 +7,7 @@ pydantic
 
 # HTTP 客户端 - 选择一个
 httpx==0.26.0
-# requests==2.31.0  # 注释掉，使用 httpx 替代
+requests==2.31.0  # 添加这行
 
 # 图片处理 - 使用较小的版本
 Pillow
