@@ -6,7 +6,8 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
-        "runtime": "python3.9"
+        "runtime": "python3.9",
+        "handler": "index.handler"
       }
     },
     {
@@ -21,17 +22,23 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/api/index.py"
+      "dest": "/backend/api/index.py"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "dest": "/frontend/dist/index.html"
     }
   ],
   "env": {
     "PYTHONPATH": "."
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    }
+  ]
 } 

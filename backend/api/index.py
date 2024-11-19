@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum
 import sys
 import os
 
@@ -21,5 +22,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 导出 FastAPI 应用实例供 Vercel 使用
-app = app
+# 创建 handler
+handler = Mangum(app)
