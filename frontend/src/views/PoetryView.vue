@@ -68,7 +68,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useImageProcessing } from '@/composables/useImageProcessing'
+import { useImageProcessing } from '../composables/useImageProcessing'
 import html2canvas from 'html2canvas'
 
 const inputText = ref('')
