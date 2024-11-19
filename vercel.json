@@ -49,7 +49,7 @@
     }
   ],
   "env": {
-    "PYTHONPATH": "backend",
+    "PYTHONPATH": ".",
     "PIP_NO_CACHE_DIR": "1"
   }
 } 
