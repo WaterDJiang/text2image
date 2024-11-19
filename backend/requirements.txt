@@ -2,7 +2,7 @@
 fastapi==0.109.2
 uvicorn==0.27.1
 python-multipart==0.0.9
-mangum==0.17.0
+mangum
 pydantic
 
 # HTTP 客户端 - 选择一个
