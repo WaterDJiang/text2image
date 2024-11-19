@@ -28,6 +28,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 添加这一行，确保 Vercel 可以找到应用实例
+module = app
+
 # 请求模型
 class PoetryRequest(BaseModel):
     text: str
