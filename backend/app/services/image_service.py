@@ -13,14 +13,9 @@ logger = logging.getLogger(__name__)
 
 class ImageService:
     def __init__(self):
-        # 根据操作系统选择字体
-        if platform.system() == "Darwin":  # macOS
-            self.font_path = "/System/Library/Fonts/STHeiti Light.ttc"  # 使用华文黑体
-        elif platform.system() == "Windows":
-            self.font_path = "C:\\Windows\\Fonts\\simhei.ttf"  # 使用黑体
-        else:  # Linux
-            self.font_path = "/usr/share/fonts/truetype/arphic/uming.ttc"  # 使用文鼎明体
-            
+        # 使用项目内置字体
+        self.font_path = os.path.join(os.path.dirname(__file__), '../../fonts/NotoSansSC-Regular.otf')
+        
     async def create_postcard(self, image_url: str, text: str) -> str:
         """
         创建明信片样式的图片
@@ -52,28 +47,12 @@ class ImageService:
             
             # 设置字体
             try:
-                font_size = 48  # 增大字体大小
+                font_size = 48
                 font = ImageFont.truetype(self.font_path, font_size)
                 logger.info(f"成功加载字体: {self.font_path}")
             except Exception as e:
-                logger.error(f"加载字体失败: {str(e)}, 尝试加载备用字体")
-                # 尝试加载备用字体
-                backup_fonts = [
-                    "/System/Library/Fonts/PingFang.ttc",
-                    "/System/Library/Fonts/Hiragino Sans GB.ttc",
-                    "C:\\Windows\\Fonts\\msyh.ttf",
-                    "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf"
-                ]
-                for backup_font in backup_fonts:
-                    try:
-                        font = ImageFont.truetype(backup_font, font_size)
-                        logger.info(f"成功加载备用字体: {backup_font}")
-                        break
-                    except Exception:
-                        continue
-                else:
-                    logger.error("所有字体加载失败，使用默认字体")
-                    font = ImageFont.load_default()
+                logger.error(f"加载字体失败: {str(e)}, 使用默认字体")
+                font = ImageFont.load_default()
             
             # 文本换行处理
             margin = 40  # 增加边距

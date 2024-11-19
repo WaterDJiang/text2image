@@ -1,11 +1,17 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
   "builds": [
     {
       "src": "backend/app/main.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist",
+        "buildCommand": "cd frontend && npm install && npm run build"
+      }
     }
   ],
   "routes": [
@@ -15,14 +21,16 @@
     },
     {
       "src": "/(assets|images)/(.*)",
-      "dest": "/$1/$2"
+      "dest": "/frontend/dist/$1/$2"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/.*",
-      "dest": "/index.html"
+      "src": "/(.*)",
+      "dest": "/frontend/dist/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "backend/app/main.py": {
+      "includeFiles": "backend/fonts/**"
+    }
+  }
 } 

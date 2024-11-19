@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # 创建 FastAPI 应用
 app = FastAPI(title="AI图片处理服务")
 
-# 在创建 FastAPI 应用后添加
+# CORS 中间件配置
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,8 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 添加这一行，确保 Vercel 可以找到应用实例
-module = app
+# 确保 Vercel 可以找到应用实例
+app = module = app
 
 # 请求模型
 class PoetryRequest(BaseModel):
