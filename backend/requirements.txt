@@ -1,15 +1,14 @@
-# Web 框架 - 核心依赖
+# Web 框架
 fastapi==0.109.2
 uvicorn==0.27.1
 python-multipart==0.0.9
-mangum==0.15.0
 pydantic
 
-# HTTP 客户端 - 选择一个
+# HTTP 客户端
 httpx==0.26.0
-requests==2.31.0  # 添加这行
+requests==2.31.0
 
-# 图片处理 - 使用较小的版本
+# 图片处理
 Pillow
 
 # AI 服务
@@ -18,5 +17,5 @@ openai==1.12.0
 # 环境配置
 python-dotenv==1.0.1
 
-# 文件处理 - 最小化
+# 文件处理
 aiofiles==23.2.1
