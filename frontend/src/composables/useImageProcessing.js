@@ -13,34 +13,40 @@ export const useImageProcessing = () => {
    * @returns {Promise} 处理结果
    */
   const processImage = async (file, type) => {
-    const formData = new FormData()  // 创建表单数据
-    formData.append('file', file)  // 添加文件
-    formData.append('workflow_type', type)  // 添加工作流类型
-    formData.append('model', modelStore.currentModel)  // 添加当前模型
+    const maxRetries = 3;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('workflow_type', type);
+    formData.append('model', modelStore.currentModel);
     
-    try {
-      console.log('API Base URL:', API_BASE_URL)  // 打印API基础URL
-      console.log('发送请求到:', `${API_BASE_URL}/process-image`)  // 打印请求URL
-      const response = await axios.post(`${API_BASE_URL}/process-image`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'  // 设置请求头
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`第 ${attempt + 1} 次重试上传...`);
+          // 等待一段时间后重试
+          await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
         }
-      })
-      
-      if (!response.data.postcard_image) {
-        throw new Error('未获取到处理后的图片')  // 如果未获取到图片，抛出错误
+        
+        const response = await axios.post(`${API_BASE_URL}/process-image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          timeout: 60000  // 60秒超时
+        });
+        
+        if (!response.data.postcard_image) {
+          throw new Error('未获取到处理后的图片');
+        }
+        return {
+          postcardImage: response.data.postcard_image,
+          text: response.data.text
+        };
+      } catch (error) {
+        console.error(`第 ${attempt + 1} 次处理失败:`, error);
+        if (attempt === maxRetries - 1) {
+          throw error;
+        }
       }
-      return {
-        postcardImage: response.data.postcard_image,  // 返回处理后的图片
-        text: response.data.text  // 返回文本
-      }
-    } catch (error) {
-      console.error('处理图片失败:', error)  // 打印错误信息
-      if (error.response) {
-        console.error('错误响应:', error.response.data)  // 打印错误响应
-        console.error('状态码:', error.response.status)  // 打印状态码
-      }
-      throw new Error('处理图片失败')  // 抛出处理失败的错误
     }
   }
 

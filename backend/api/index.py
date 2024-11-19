@@ -6,7 +6,7 @@ import os
 
 # 添加正确的 Python 路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
-backend_dir = os.path.dirname(os.path.dirname(current_dir))
+backend_dir = os.path.dirname(current_dir)
 sys.path.insert(0, backend_dir)
 
 from backend.app.main import app

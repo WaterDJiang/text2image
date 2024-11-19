@@ -80,7 +80,7 @@ const { processPoetry } = useImageProcessing()
 // 生成趣语
 const handleGenerate = async () => {
   if (!inputText.value.trim()) {
-    ElMessage.warning('请输入文字')
+    ElMessage.warning('请入文字')
     return
   }
 
@@ -133,11 +133,11 @@ const handleViewImage = async () => {
       <img src="${imageData}" alt="趣语趣图">
     `)
   } catch (error) {
-    ElMessage.error('图片生成失败')
+    ElMessage.error('片生成失败')
   }
 }
 
-// 重置
+// 重
 const handleReset = () => {
   inputText.value = ''
   result.value = null
@@ -145,78 +145,96 @@ const handleReset = () => {
 </script>
 
 <style scoped>
+/* 主容器样式 */
 .poetry-view {
   max-width: 800px;
   margin: 40px auto;
   padding: 32px;
 }
 
+/* 内容布局容器 */
 .poetry-container {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 32px; /* 区块间距 */
 }
 
+/* 输入区域样式 */
 .input-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+/* 生成按钮样式 */
 .generate-button {
   align-self: flex-end;
   min-width: 120px;
 }
 
+/* 结果展示区域 */
 .result-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+/* 诗词卡片主容器 - 保持9:16比例 */
 .poetry-card {
-  padding: 40px;
+  padding: 20px;
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 450px; /* 限制最大宽度，避免在大屏幕上太宽 */
-  aspect-ratio: 9/16; /* 修改为 9:16 比例 */
+  max-width: 450px; /* 限制最大宽度 */
+  aspect-ratio: 9/16; /* 保持固定宽高比 */
   overflow: hidden;
-  margin: 0 auto; /* 居中显示 */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 添加阴影效果 */
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
+/* 诗词内容布局 - 明确分配空间 */
 .poetry-content {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  gap: 0;
+  padding: 0; /* 移除内边距，由子元素控制 */
 }
 
+/* 文字区域样式 - 固定高度比例 */
 .text-section {
-  padding: 25px 20px;
-  flex: 0 0 20%;
+  flex: 0 0 40%; /* 固定占用40%高度 */
+  padding: 20px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  justify-content: center; /* 文字垂直居中 */
 }
 
+/* 评论文字样式 */
 .comment-text {
-  font-size: 1rem; /* 增大字体大小 */
-  line-height: 1.5; /* 调整行高 */
+  font-size: 1.2rem;
+  line-height: 1.8;
   color: var(--notion-text);
-  text-align: center; /* 居中对齐 */
-  white-space: pre-wrap;
-  margin-bottom: 30px;
+  text-align: center;
+  white-space: pre-line;
+  margin-bottom: 10px; /* 减小底部边距 */
   font-weight: 500;
+  max-width: 90%;
+  overflow-wrap: break-word;
 }
 
+/* 分隔线调整 */
 .divider {
-  width: 100%;
-  padding: 0 40px;
-  margin: 10px 0;
+  width: 80%;
+  margin: 10px auto;
 }
 
+/* 渐变分隔线 */
 .divider-line {
   width: 100%;
   height: 2px;
@@ -229,33 +247,51 @@ const handleReset = () => {
   );
 }
 
+/* SVG容器 - 固定比例和位置 */
 .svg-container {
-  flex: 0 0 60%;
+  flex: 0 0 60%; /* 固定占用60%高度 */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 10px;
-  overflow: hidden;
-}
-
-.svg-container :deep(svg) {
   width: 100%;
-  height: auto;
-  max-height: 100%;
-  object-fit: contain;
+  position: relative;
+  padding: 10px; /* 添加内边距作为边框 */
+  box-sizing: border-box;
 }
 
+/* SVG图片样式 - 自适应填充 */
+.svg-container :deep(svg) {
+  width: 95%; /* 占用容器95%宽度，留5%作为边框 */
+  height: 95%; /* 占用容器95%高度，留5%作为边框 */
+  object-fit: contain;
+  display: block;
+  margin: auto;
+  background-color: transparent;
+}
+
+/* 确保容器在卡片中正确显示 */
+.poetry-content {
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 0; /* 增加上下内边距 */
+}
+
+/* 卡片样式穿透 */
 :deep(.poetry-card) {
   box-sizing: border-box;
   position: relative;
 }
 
+/* 卡片阴影和边框 */
 .poetry-card {
   animation: fadeIn 0.4s ease;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--notion-border);
 }
 
+/* 内容背景渐变 */
 .poetry-content {
   background: linear-gradient(
     180deg,
@@ -264,16 +300,19 @@ const handleReset = () => {
   );
 }
 
+/* 文字阴影效果 */
 .comment-text {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
+/* 操作按钮容器 */
 .action-buttons {
   display: flex;
   justify-content: center;
   gap: 12px;
 }
 
+/* 淡入动画 */
 @keyframes fadeIn {
   from {
     opacity: 0;

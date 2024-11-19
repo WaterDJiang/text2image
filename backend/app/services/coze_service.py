@@ -2,112 +2,101 @@ import requests
 import os
 import json
 import logging
-from ..config import settings
+from dotenv import load_dotenv
+import httpx
+
+# 加载环境变量
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 class CozeService:
     def __init__(self):
-        """初始化CozeService，设置API相关配置"""
-        self.api_url = settings.COZE_API_URL  # COZE API地址
-        self.api_key = settings.COZE_API_KEY  # COZE API密钥
-        self.workflow_id_mood = settings.WORKFLOW_ID_MOOD  # 心情工作流ID
-        self.workflow_id_sarcastic = settings.WORKFLOW_ID_SARCASTIC  # 毒舌工作流ID
-        self.workflow_id_poetry = os.getenv('WORKFLOW_ID_POETRY')  # 诗意工作流ID
+        """初始化CozeService，从环境变量获取配置"""
+        logger.info("正在初始化 Coze 服务...")
+        
+        # 从环境变量获取配置
+        self.api_url = os.getenv('COZE_API_URL', 'https://api.coze.cn/v1/workflow/run')
+        self.api_key = os.getenv('COZE_API_KEY')
+        self.workflow_id_mood = os.getenv('WORKFLOW_ID_MOOD')
+        self.workflow_id_sarcastic = os.getenv('WORKFLOW_ID_SARCASTIC')
+        self.workflow_id_poetry = os.getenv('WORKFLOW_ID_POETRY')
+        
+        # 验证必要的环境变量
+        if not self.api_key:
+            raise ValueError("COZE_API_KEY 环境变量未设置")
+        if not self.api_key.startswith('pat_'):
+            raise ValueError("COZE_API_KEY 必须以 'pat_' 开头")
+            
+        logger.info("Coze 服务初始化成功")
     
-    def process_image(self, image_url, workflow_type="mood"):
-        """
-        处理图片的主要方法
-        Args:
-            image_url: 需要处理的图片URL
-            workflow_type: 工作流类型，默认为'mood'
-        Returns:
-            dict: 包含处理后的图片URL和调试URL
-            None: 处理失败时返回
-        """
+    async def process_image(self, image_url: str, workflow_type: str = "mood") -> dict:
+        """异步处理图片"""
         try:
             headers = {
-                "Authorization": f"Bearer {self.api_key}",  # 设置授权头
-                "Content-Type": "application/json",  # 设置内容类型
-                "Accept": "*/*"  # 接受所有类型
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "Accept": "*/*"
             }
             
-            workflow_id = self._get_workflow_id(workflow_type)  # 获取工作流ID
+            workflow_id = self._get_workflow_id(workflow_type)
             if not workflow_id:
-                logger.error(f"未找到工作流类型: {workflow_type}")  # 记录错误
+                logger.error(f"未找到工作流类型: {workflow_type}")
                 return None
             
             payload = {
-                "workflow_id": workflow_id,  # 工作流ID
+                "workflow_id": workflow_id,
                 "parameters": {
-                    "image_url": image_url  # 图片URL
+                    "image_url": image_url
                 },
-                "is_async": False  # 同步处理
+                "is_async": False
             }
             
-            logger.debug("Coze API请求信息:")  # 记录请求信息
-            logger.debug(f"URL: {self.api_url}")  # 记录请求URL
-            logger.debug(f"Headers: {headers}")  # 记录请求头
-            logger.debug(f"Payload: {json.dumps(payload, ensure_ascii=False)}")  # 记录请求体
+            logger.debug("Coze API请求信息:")
+            logger.debug(f"URL: {self.api_url}")
+            logger.debug(f"Headers: {headers}")
+            logger.debug(f"Payload: {json.dumps(payload, ensure_ascii=False)}")
             
-            response = requests.post(self.api_url, json=payload, headers=headers)  # 发送请求
-            
-            logger.debug(f"Coze API响应状态码: {response.status_code}")  # 记录响应状态码
-            logger.debug(f"Coze API响应内容: {response.text}")  # 记录响应内容
-            
-            if response.status_code == 200:
-                result = response.json()  # 解析响应为JSON
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.api_url,  # 直接使用完整 URL，不添加 /process
+                    headers=headers,
+                    json=payload,
+                    timeout=30.0
+                )
                 
-                if result.get('code') == 0:
-                    try:
-                        data = result.get('data')  # 获取数据
-                        if isinstance(data, str):
-                            data = json.loads(data)  # 如果数据是字符串，解析为JSON
-                            logger.debug(f"解析后的数据: {data}")  # 记录解析后的数据
-                        
-                        output_text = data.get('output')  # 获取输出文本
-                        if not output_text:
-                            logger.error("响应中没有output字段")  # 记录错误
+                logger.debug(f"Response status: {response.status_code}")
+                logger.debug(f"Response content: {response.text}")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('code') == 0:
+                        try:
+                            data = result.get('data')
+                            if isinstance(data, str):
+                                data = json.loads(data)
+                            
+                            logger.debug(f"解析后的数据: {data}")
+                            
+                            # 获取output中的内容
+                            comment = data.get('output', '')
+                            svg = data.get('output1', '')
+                            
+                            return {
+                                'comment': comment,
+                                'svg': svg,
+                                'debug_url': result.get('debug_url')
+                            }
+                        except json.JSONDecodeError as e:
+                            logger.error(f"JSON解析失败: {str(e)}, 原始数据: {data}")
                             return None
-                        
-                        # 调用图片服务生成明信片样式的图片
-                        from ..services.image_service import ImageService
-                        image_service = ImageService()
-                        postcard_image = image_service.create_postcard(
-                            image_url=image_url,
-                            text=output_text
-                        )
-                        
-                        # 上传合成后的图片
-                        from ..services.imgbb_service import ImgBBService
-                        imgbb_service = ImgBBService()
-                        final_image_url = imgbb_service.upload_image(postcard_image)
-                        
-                        if not final_image_url:
-                            logger.error("合成图片上传失败")
-                            return None
-                        
-                        return {
-                            'text': output_text,
-                            'original_image': image_url,
-                            'postcard_image': final_image_url,
-                            'debug_url': result.get('debug_url')
-                        }
-                        
-                    except json.JSONDecodeError as e:
-                        logger.error(f"JSON解析失败: {str(e)}, 原始数据: {data}")
+                    else:
+                        logger.error(f"Coze API返回错误码: {result.get('code')}, 消息: {result.get('msg')}")
                         return None
                 else:
-                    logger.error(f"Coze API返回错误码: {result.get('code')}, 消息: {result.get('msg')}")
+                    logger.error(f"API请求失败: {response.status_code} - {response.text}")
                     return None
-            elif response.status_code == 504:
-                logger.error("Coze API执行超时")
-                return None
-            else:
-                logger.error(f"Coze API请求失败: HTTP {response.status_code}")
-                logger.error(f"错误响应: {response.text}")
-                return None
-                
+                    
         except Exception as e:
             logger.error(f"处理图片时发生错误: {str(e)}")
             return None
@@ -122,75 +111,71 @@ class CozeService:
         logger.debug(f"工作流类型: {workflow_type}, 对应ID: {workflow_id}")
         return workflow_id
     
-    def process_poetry(self, text):
-        """处理诗意文本，返回评论和SVG图片"""
+    async def process_poetry(self, text):
+        """处理诗意文本"""
         try:
             headers = {
                 "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-                "Accept": "*/*"
+                "Content-Type": "application/json"
             }
             
-            # 构建请求体，使用正确的参数名称
             payload = {
                 "workflow_id": self.workflow_id_poetry,
                 "parameters": {
-                    "BOT_USER_INPUT": text  # 修改为 input_text
+                    "BOT_USER_INPUT": text
                 }
             }
             
-            logger.debug(f"诗意处理 - 输入文本: {text}")
-            logger.debug(f"请求payload: {json.dumps(payload, ensure_ascii=False)}")
+            logger.info(f"发送请求到 Coze API:")
+            logger.info(f"URL: {self.api_url}")
+            logger.info(f"Workflow ID: {self.workflow_id_poetry}")
+            logger.info(f"Input text: {text}")
+            logger.info(f"Headers: {headers}")
+            logger.info(f"Payload: {json.dumps(payload, ensure_ascii=False)}")
             
-            response = requests.post(self.api_url, json=payload, headers=headers)
-            logger.debug(f"Coze API响应状态码: {response.status_code}")
-            logger.debug(f"Coze API响应内容: {response.text}")
-            
-            if response.status_code == 200:
-                result = response.json()
-                if result.get('code') == 0:
-                    try:
-                        # 获取data字段
-                        data = result.get('data')
-                        if isinstance(data, str):
-                            data = json.loads(data)
-                        
-                        logger.debug(f"解析后的数据: {data}")
-                        
-                        # 获取output1中的内容
-                        svg_content = data.get('output1', '')
-                        
-                        # 提取SVG标签内的内容
-                        import re
-                        svg_match = re.search(r'(<svg.*?</svg>)', svg_content, re.DOTALL)
-                        svg = svg_match.group(1) if svg_match else ''
-                        
-                        logger.debug(f"提取的SVG: {svg}")
-                        
-                        return {
-                            'comment': data.get('output', ''),
-                            'svg': svg,
-                            'debug_url': result.get('debug_url')
-                        }
-                    except json.JSONDecodeError as e:
-                        logger.error(f"JSON解析失败: {str(e)}, 原始数据: {data}")
-                        if isinstance(data, dict):
-                            svg_content = data.get('output1', '')
-                            svg_match = re.search(r'(<svg.*?</svg>)', svg_content, re.DOTALL)
-                            svg = svg_match.group(1) if svg_match else ''
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.api_url,  # 直接使用完整 URL，不添加 /process
+                    headers=headers,
+                    json=payload,
+                    timeout=30.0
+                )
+                
+                # 添加详细的响应日志
+                logger.info(f"Coze API 响应状态码: {response.status_code}")
+                logger.info(f"Coze API 响应头: {dict(response.headers)}")
+                logger.info(f"Coze API 响应内容: {response.text}")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('code') == 0:
+                        try:
+                            data = result.get('data')
+                            if isinstance(data, str):
+                                data = json.loads(data)
+                            
+                            logger.debug(f"解析后的数据: {data}")
+                            
+                            # 获取output中的内容
+                            comment = data.get('output', '')
+                            svg = data.get('output1', '')
+                            
                             return {
-                                'comment': data.get('output', ''),
+                                'comment': comment,
                                 'svg': svg,
                                 'debug_url': result.get('debug_url')
                             }
+                        except json.JSONDecodeError as e:
+                            logger.error(f"JSON解析失败: {str(e)}, 原始数据: {data}")
+                            return None
+                    else:
+                        logger.error(f"Coze API返回错误码: {result.get('code')}, 消息: {result.get('msg')}")
                         return None
                 else:
-                    logger.error(f"Coze API返回错误码: {result.get('code')}, 消息: {result.get('msg')}")
-                    return None
-            
-            logger.error(f"Coze API请求失败: {response.text}")
-            return None
-            
+                    error_msg = f"Coze API请求失败: HTTP {response.status_code}, 响应: {response.text}"
+                    logger.error(error_msg)
+                    raise Exception(error_msg)
+                
         except Exception as e:
             logger.error(f"处理诗意文本时发生错误: {str(e)}")
-            return None
+            raise Exception(f"生成失败: {str(e)}")

@@ -5,120 +5,120 @@ import textwrap
 import os
 import logging
 import platform
+import traceback
+import base64
+import httpx
 
-# 获取logger实例
 logger = logging.getLogger(__name__)
 
 class ImageService:
-    """图片处理服务"""
-    
-    def _get_system_font(self):
-        """
-        获取系统默认中文字体
-        """
-        system = platform.system()
-        if system == "Windows":
-            # Windows 默认中文字体
-            font_paths = [
-                "C:\\Windows\\Fonts\\msyh.ttc",  # 微软雅黑
-                "C:\\Windows\\Fonts\\simsun.ttc",  # 宋体
-            ]
-        elif system == "Darwin":  # macOS
-            font_paths = [
-                "/System/Library/Fonts/PingFang.ttc",  # 苹方
-                "/System/Library/Fonts/STHeiti Light.ttc",  # 华文黑体
-            ]
+    def __init__(self):
+        # 根据操作系统选择字体
+        if platform.system() == "Darwin":  # macOS
+            self.font_path = "/System/Library/Fonts/STHeiti Light.ttc"  # 使用华文黑体
+        elif platform.system() == "Windows":
+            self.font_path = "C:\\Windows\\Fonts\\simhei.ttf"  # 使用黑体
         else:  # Linux
-            font_paths = [
-                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Noto Sans CJK
-                "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",  # Droid Sans
-            ]
-        
-        # 尝试加载系统字体
-        for font_path in font_paths:
-            try:
-                if os.path.exists(font_path):
-                    return ImageFont.truetype(font_path, 24)
-            except Exception as e:
-                logger.warning(f"加载字体 {font_path} 失败: {str(e)}")
-        
-        # 如果没有找到合适的字体，返回默认字体
-        logger.warning("未找到系统中文字体，使用默认字体")
-        return ImageFont.load_default()
-    
-    def create_postcard(self, image_url: str, text: str) -> bytes:
-        """
-        创建明信片风格的图文组合
-        
-        Args:
-            image_url: 原始图片URL
-            text: 要添加的文字
+            self.font_path = "/usr/share/fonts/truetype/arphic/uming.ttc"  # 使用文鼎明体
             
-        Returns:
-            bytes: 生成的图片二进制数据
+    async def create_postcard(self, image_url: str, text: str) -> str:
+        """
+        创建明信片样式的图片
+        :param image_url: 原始图片URL
+        :param text: 要添加的文本
+        :return: base64编码的图片
         """
         try:
             # 下载原始图片
-            response = requests.get(image_url)
-            img = Image.open(BytesIO(response.content))
+            async with httpx.AsyncClient() as client:
+                response = await client.get(image_url)
+                response.raise_for_status()
+                image_data = response.content
+
+            # 打开图片
+            image = Image.open(BytesIO(image_data))
             
-            # 调整图片大小，保持比例
-            base_width = 800
-            w_percent = base_width / float(img.size[0])
-            h_size = int(float(img.size[1]) * float(w_percent))
-            img = img.resize((base_width, h_size), Image.Resampling.LANCZOS)
+            # 调整图片大小，保持宽高比
+            max_size = (1200, 1200)  # 增加图片尺寸
+            image.thumbnail(max_size, Image.Resampling.LANCZOS)
             
-            # 创建新的画布，底色为白色
-            margin = 40  # 边距
-            text_height = 200  # 文字区域高度
-            canvas = Image.new('RGB', 
-                             (base_width + 2*margin, 
-                              h_size + 2*margin + text_height), 
-                             'white')
+            # 创建新的画布，底部留出空间给文字
+            text_height = 300  # 增加文字区域高度
+            new_image = Image.new('RGB', (image.width, image.height + text_height), 'white')
+            new_image.paste(image, (0, 0))
             
-            # 粘贴原图
-            canvas.paste(img, (margin, margin))
+            # 创建绘图对象
+            draw = ImageDraw.Draw(new_image)
             
-            # 添加文字
-            draw = ImageDraw.Draw(canvas)
+            # 设置字体
+            try:
+                font_size = 48  # 增大字体大小
+                font = ImageFont.truetype(self.font_path, font_size)
+                logger.info(f"成功加载字体: {self.font_path}")
+            except Exception as e:
+                logger.error(f"加载字体失败: {str(e)}, 尝试加载备用字体")
+                # 尝试加载备用字体
+                backup_fonts = [
+                    "/System/Library/Fonts/PingFang.ttc",
+                    "/System/Library/Fonts/Hiragino Sans GB.ttc",
+                    "C:\\Windows\\Fonts\\msyh.ttf",
+                    "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf"
+                ]
+                for backup_font in backup_fonts:
+                    try:
+                        font = ImageFont.truetype(backup_font, font_size)
+                        logger.info(f"成功加载备用字体: {backup_font}")
+                        break
+                    except Exception:
+                        continue
+                else:
+                    logger.error("所有字体加载失败，使用默认字体")
+                    font = ImageFont.load_default()
             
-            # 获取系统字体
-            font = self._get_system_font()
-            font_size = 24 if font != ImageFont.load_default() else 16
+            # 文本换行处理
+            margin = 40  # 增加边距
+            text_width = image.width - 2 * margin
+            wrapped_text = textwrap.fill(text, width=20)  # 减少每行字数以增大字体
             
-            # 文字换行处理
-            wrapper = textwrap.TextWrapper(width=40)  # 每行大约40个字符
-            text_lines = wrapper.wrap(text)
+            # 计算文本位置（居中）
+            text_bbox = draw.multiline_textbbox((0, 0), wrapped_text, font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height_actual = text_bbox[3] - text_bbox[1]
             
-            # 计算文字位置并绘制
-            text_y = margin + h_size + 40
-            for line in text_lines:
-                # 使用 getsize 替代 getlength（兼容旧版本PIL）
-                try:
-                    text_width = font.getlength(line)
-                except AttributeError:
-                    text_width, _ = font.getsize(line)
-                    
-                text_x = margin + (base_width - text_width) / 2  # 居中对齐
-                draw.text((text_x, text_y), line, font=font, fill='black')
-                text_y += font_size + 10
+            x = (image.width - text_width) / 2
+            y = image.height + (text_height - text_height_actual) / 2
             
-            # 添加装饰边框
-            border_width = 2
-            draw.rectangle(
-                [(margin-border_width, margin-border_width),
-                 (margin+base_width+border_width, margin+h_size+text_height+border_width)],
-                outline='#CCCCCC',
-                width=border_width
+            # 绘制文本背景
+            padding = 20
+            background_bbox = (
+                x - padding,
+                y - padding,
+                x + text_width + padding,
+                y + text_height_actual + padding
+            )
+            draw.rectangle(background_bbox, fill='white')
+            
+            # 绘制文本
+            draw.multiline_text(
+                (x, y),
+                wrapped_text,
+                font=font,
+                fill='black',
+                align='center',
+                spacing=10  # 增加行间距
             )
             
-            # 转换为二进制数据
-            output = BytesIO()
-            canvas.save(output, format='PNG')
-            return output.getvalue()
+            # 转换为base64
+            buffered = BytesIO()
+            new_image.save(buffered, format="JPEG", quality=95)  # 提高图片质量
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            
+            logger.info("成功创建明信片样式图片")
+            return f"data:image/jpeg;base64,{img_str}"
             
         except Exception as e:
             logger.error(f"创建明信片失败: {str(e)}")
+            logger.error(traceback.format_exc())
             return None
     
     def resize_image(self, image: Image.Image, width: int, height: int) -> Image.Image:
