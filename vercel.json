@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/app/main.py",
+      "src": "backend/api/index.py",
       "use": "@vercel/python"
     },
     {
@@ -17,11 +17,18 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/app/main.py"
+      "dest": "/backend/api/index.py"
     },
     {
-      "src": "/(assets|images)/(.*)",
-      "dest": "/frontend/dist/$1/$2"
+      "src": "/assets/(.*)",
+      "dest": "/frontend/dist/assets/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/frontend/dist/images/$1"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
@@ -29,7 +36,7 @@
     }
   ],
   "functions": {
-    "backend/app/main.py": {
+    "backend/api/index.py": {
       "includeFiles": "backend/fonts/**"
     }
   }
