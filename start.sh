@@ -49,8 +49,8 @@ echo "后端服务已启动！"
 
 # 启动前端服务
 echo "启动前端服务..."
-cd ../frontend
-PYTHONPATH=$PYTHONPATH:$(pwd)/.. streamlit run app.py
+cd ..  # 回到根目录
+PYTHONPATH=$PYTHONPATH:$(pwd) streamlit run app.py  # 使用根目录的 app.py
 
 # 清理进程
 trap 'kill $BACKEND_PID' EXIT

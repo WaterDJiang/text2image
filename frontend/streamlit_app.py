@@ -13,20 +13,16 @@ st.set_page_config(
 # 自定义CSS样式
 st.markdown("""
     <style>
-        /* 整体容器样式 */
         .stApp {
             max-width: 100%;
             padding: 1rem;
         }
         
-        /* 主内容区域样式 */
         .main {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
-        
-        /* 其他样式... */
     </style>
 """, unsafe_allow_html=True)
 
