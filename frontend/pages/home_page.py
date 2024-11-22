@@ -3,6 +3,7 @@ from frontend.utils.api import generate_image
 from PIL import Image
 import io
 import time
+import base64
 
 def render_home_page():
     # 主页面标题
@@ -33,13 +34,13 @@ def render_home_page():
             if user_input:
                 with st.spinner('🎭 AI正在创作中...'):
                     try:
-                        # 调用API生成图片
+                        # 调用API生成图片，传入所有参数
                         image_data = generate_image(
-                            user_input,
-                            provider,
-                            model,
-                            temperature,
-                            max_tokens
+                            text=user_input,
+                            provider=provider,
+                            model=model,
+                            temperature=temperature,
+                            max_tokens=max_tokens
                         )
                         
                         if image_data is not None:
@@ -72,11 +73,30 @@ def render_home_page():
         else:
             # 从session state中获取生成的图片数据和时间戳
             image_data = st.session_state.generated_image['image']
-            timestamp = st.session_state.generated_image['timestamp']
             
-            # 直接使用image_data显示图片，移除未使用的字节流转换代码
-            st.image(
-                image_data,
-                caption="🎨 AI创作结果",
-                use_column_width=True,
-            )
+            if image_data:
+                try:
+                    # 如果是字节数据（PNG格式）
+                    if isinstance(image_data, bytes):
+                        st.image(image_data, caption="🎨 AI创作结果", use_container_width=True)
+                    
+                    # 如果是URL
+                    elif isinstance(image_data, str) and image_data.startswith(('http://', 'https://')):
+                        st.image(image_data, caption="🎨 AI创作结果", use_container_width=True)
+                    
+                    # 如果是SVG代码
+                    elif isinstance(image_data, str) and '<svg' in image_data:
+                        # 使用HTML显示SVG
+                        st.markdown(f"""
+                            <div style="display: flex; justify-content: center;">
+                                {image_data}
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    else:
+                        st.error("不支持的图片格式")
+                        st.write("图片数据类型:", type(image_data))
+                        
+                except Exception as e:
+                    st.error(f"显示图片时出错: {str(e)}")
+                    st.write("错误详情:", str(e))

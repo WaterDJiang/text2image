@@ -1,11 +1,10 @@
 #!/bin/bash
 
+# 确保在项目根目录
+cd "$(dirname "$0")"
+
 # 激活虚拟环境
-if [ "$(uname)" == "Darwin" ] || [ "$(uname)" == "Linux" ]; then
-    source venv/bin/activate
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ] || [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
-    source venv/Scripts/activate
-fi
+source venv/bin/activate
 
 # 检查环境变量
 if [ ! -f .env ]; then
@@ -50,7 +49,7 @@ echo "后端服务已启动！"
 # 启动前端服务
 echo "启动前端服务..."
 cd ..  # 回到根目录
-PYTHONPATH=$PYTHONPATH:$(pwd) streamlit run app.py  # 使用根目录的 app.py
+"$(pwd)/venv/bin/streamlit" run app.py
 
 # 清理进程
 trap 'kill $BACKEND_PID' EXIT

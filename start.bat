@@ -36,5 +36,4 @@ echo 后端服务已启动！
 
 echo 启动前端服务...
 cd ..  # 回到根目录
-set PYTHONPATH=%PYTHONPATH%;%CD%
-streamlit run app.py  # 使用根目录的 app.py
+streamlit run app.py  # 正确，使用根目录的 app.py
