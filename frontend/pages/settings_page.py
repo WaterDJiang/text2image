@@ -1,8 +1,14 @@
 import streamlit as st
-import requests
+from frontend.services.api_service import APIService
+import asyncio
 
-def render_settings_sidebar():
-    with st.sidebar:
+async def check_service_health():
+    """异步检查服务健康状态"""
+    api_service = APIService()
+    return await api_service.check_health()
+
+def show_settings_page():
+    with st.sidebar: 
         st.title("⚙️ 设置")
         
         # 模型供应商选择
@@ -56,13 +62,11 @@ def render_settings_sidebar():
         st.sidebar.markdown("---")
         st.sidebar.markdown("### 🔄 系统状态")
         
-        try:
-            response = requests.get("http://localhost:8000/health")
-            if response.status_code == 200:
-                st.sidebar.success("服务正常运行")
-                status_data = response.json()
-                st.sidebar.json(status_data)
-            else:
-                st.sidebar.error("服务异常")
-        except:
-            st.sidebar.error("无法连接到服务") 
+        # 使用异步方式检查服务状态
+        status_data = asyncio.run(check_service_health())
+        
+        if status_data.get("status") == "healthy":
+            st.sidebar.success("服务正常运行")
+            st.sidebar.json(status_data)
+        else:
+            st.sidebar.error("服务异常") 

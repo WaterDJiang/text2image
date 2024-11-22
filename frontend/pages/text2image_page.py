@@ -5,13 +5,13 @@ import io
 import time
 import base64
 
-def render_home_page():
+def show_text2image_page():
     # 主页面标题
     st.title("🎨 趣说趣图")
     st.write("📝 输入你的想法，让AI为你创作")
 
     # 创建左右两列布局，比例为1:2
-    input_col, output_col = st.columns([2, 3])      
+    input_col, center_col, output_col = st.columns([2, 0.2, 3])      
 
     # 左侧列 - 输入区域和生成按钮
     with input_col:
@@ -76,26 +76,29 @@ def render_home_page():
             
             if image_data:
                 try:
-                    # 如果是字节数据（PNG格式）
-                    if isinstance(image_data, bytes):
-                        st.image(image_data, caption="🎨 AI创作结果", use_container_width=True)
-                    
-                    # 如果是URL
-                    elif isinstance(image_data, str) and image_data.startswith(('http://', 'https://')):
-                        st.image(image_data, caption="🎨 AI创作结果", use_container_width=True)
-                    
-                    # 如果是SVG代码
-                    elif isinstance(image_data, str) and '<svg' in image_data:
-                        # 使用HTML显示SVG
-                        st.markdown(f"""
-                            <div style="display: flex; justify-content: center;">
-                                {image_data}
-                            </div>
-                            """, unsafe_allow_html=True)
-                    
-                    else:
-                        st.error("不支持的图片格式")
-                        st.write("图片数据类型:", type(image_data))
+                    # 创建一个固定高度的容器
+                    with st.container():
+                        
+                        # 如果是字节数据（PNG格式）
+                        if isinstance(image_data, bytes):
+                            st.image(image_data, caption="🎨 AI创作结果", use_container_width=False)
+                        
+                        # 如果是URL
+                        elif isinstance(image_data, str) and image_data.startswith(('http://', 'https://')):
+                            st.image(image_data, caption="🎨 AI创作结果", use_container_width=False)
+                        
+                        # 如果是SVG代码
+                        elif isinstance(image_data, str) and '<svg' in image_data:
+                            # 使用HTML显示SVG
+                            st.markdown(f"""
+                                <div style="display: flex; justify-content: center;">
+                                    {image_data}
+                                </div>
+                                """, unsafe_allow_html=False)
+                        
+                        else:
+                            st.error("不支持的图片格式")
+                            st.write("图片数据类型:", type(image_data))                          
                         
                 except Exception as e:
                     st.error(f"显示图片时出错: {str(e)}")

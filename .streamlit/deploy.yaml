@@ -1,0 +1,4 @@
+deployment:
+  environment:
+    - name: IS_LOCAL
+      value: "false" 
