@@ -1,3 +1,14 @@
 streamlit
-python-dotenv
-requests
+fastapi>=0.109.0
+uvicorn>=0.27.0
+httpx>=0.26.0
+requests>=2.31.0
+Pillow
+cairosvg>=2.7.0
+python-dotenv>=1.0.0
+openai>=1.12.0
+pydantic
+python-multipart>=0.0.6
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
