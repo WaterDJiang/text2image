@@ -49,7 +49,7 @@ echo "后端服务已启动！"
 # 启动前端服务
 echo "启动前端服务..."
 cd ..  # 回到根目录
-"$(pwd)/venv/bin/streamlit" run app.py
+"$(pwd)/venv/bin/streamlit" run streamlit_app.py
 
 # 清理进程
 trap 'kill $BACKEND_PID' EXIT
