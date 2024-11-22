@@ -1,0 +1,68 @@
+import streamlit as st
+import requests
+
+def render_settings_sidebar():
+    with st.sidebar:
+        st.title("⚙️ 设置")
+        
+        # 模型供应商选择
+        provider = st.selectbox(
+            "选择模型供应商",
+            ["Ollama", "DeepSeek"],
+            help="选择要使用的AI模型供应商"
+        )
+        
+        # 根据供应商显示不同的模型选项
+        if provider == "Ollama":
+            model = st.selectbox(
+                "选择模型",
+                ["qwen2.5", "llama2", "mistral"],
+                help="选择要使用的具体模型"
+            )
+        else:  # DeepSeek
+            model = st.selectbox(
+                "选择模型",
+                ["deepseek-chat", "deepseek-coder"],
+                help="选择要使用的具体模型"
+            )
+        
+        # 高级设置折叠面板
+        with st.expander("🛠️ 高级设置"):
+            temperature = st.slider(
+                "温度",
+                min_value=0.0,
+                max_value=2.0,
+                value=0.7,
+                step=0.1,
+                help="控制输出的随机性，值越大输出越随机"
+            )
+            
+            max_tokens = st.slider(
+                "最大输出长度",
+                min_value=100,
+                max_value=2000,
+                value=500,
+                step=100,
+                help="控制输出的最大字符数"
+            )
+        
+        # 保存设置到session_state
+        st.session_state.provider = provider
+        st.session_state.model = model
+        st.session_state.temperature = temperature
+        st.session_state.max_tokens = max_tokens
+        
+        # 显示系统状态
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 🔄 系统状态")
+        
+        try:
+            response = requests.get("http://localhost:8000/health")
+            if response.status_code == 200:
+                st.sidebar.success("服务正常运行")
+                status_data = response.json()
+                st.sidebar.json(status_data)
+            else:
+                st.sidebar.error("服务异常")
+        except:
+            st.sidebar.error("无法连接到服务") 
