@@ -1,6 +1,15 @@
 import streamlit as st
+import os
 from frontend.pages.home_page import render_home_page
 from frontend.pages.settings_page import render_settings_sidebar
+
+# 获取环境变量
+VERCEL_ENV = os.environ.get('VERCEL_ENV')
+API_BASE = "https://your-vercel-domain.vercel.app/api" if VERCEL_ENV else "http://localhost:8000"
+
+# 更新 API 调用地址
+def get_api_url(endpoint: str) -> str:
+    return f"{API_BASE}/{endpoint.lstrip('/')}"
 
 # 页面配置
 st.set_page_config(
